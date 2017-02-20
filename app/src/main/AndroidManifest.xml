@@ -78,6 +78,7 @@
             android:name=".activity.AboutActivity"
             android:label="@string/title_activity_about" >
         </activity>
+        <activity android:name=".activity.RuleActivity"/>
     </application>
 
 </manifest>

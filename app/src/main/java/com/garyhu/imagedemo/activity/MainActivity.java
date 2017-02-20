@@ -82,6 +82,13 @@ public class MainActivity extends AppCompatActivity {
 //                jump();
             }
         });
+
+        findViewById(R.id.rule).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(MainActivity.this,RuleActivity.class));
+            }
+        });
     }
 
     @Override

@@ -85,7 +85,13 @@
                 android:text="六界面"/>
 
         </LinearLayout>
-
+        <Button
+            android:id="@+id/rule"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="8dp"
+            android:background="@drawable/btn_shape"
+            android:text="RuleView"/>
     </LinearLayout>
 
 </ScrollView>
