@@ -14,13 +14,20 @@
         android:orientation="vertical">
 
         <com.garyhu.imagedemo.widget.CustomProgressBar
+            android:id="@+id/cus_progress"
             android:layout_marginTop="10dp"
             android:layout_centerHorizontal="true"
             android:layout_width="200dp"
             android:layout_height="200dp"
-            cpb:progressSpeed="5"
-            cpb:firstColor="#F00"
-            cpb:secondColor="#FEd0"/>
+            cpb:progressSpeed="20"
+            cpb:firstColor="#DFDDDD"
+            cpb:secondColor="#F96319"/>
+
+        <Button
+            android:id="@+id/start"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="开始"/>
 
         <com.garyhu.imagedemo.widget.RoundImageView
             android:layout_centerInParent="true"

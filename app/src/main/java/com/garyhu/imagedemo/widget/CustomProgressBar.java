@@ -6,8 +6,13 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.RectF;
+import android.text.SpannableString;
+import android.text.Spanned;
+import android.text.style.AbsoluteSizeSpan;
+import android.text.style.RelativeSizeSpan;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.View;
 import android.view.WindowManager;
@@ -17,6 +22,7 @@ import com.garyhu.imagedemo.R;
 /**
  * 作者： garyhu.
  * 时间： 2016/10/22.
+ * 圆弧显示进度
  */
 public class CustomProgressBar extends View {
 
@@ -28,7 +34,9 @@ public class CustomProgressBar extends View {
      * 画TextView的画笔
      */
     private Paint tvPaint;
-    private float textSize = dipToPx(10);
+    private float textSize1 = 40f;
+    private float textSize2 = 70f;
+    private float textSize3 = 40f;
     /**
      * 第一个圆环颜色
      */
@@ -50,9 +58,30 @@ public class CustomProgressBar extends View {
      */
     private int mProgress;
     /**
+     * 终止进度
+     */
+    private int mOverProgress;
+    /**
      * 是否下一个
      */
     private boolean isNext;
+    /**
+     * 进度条的标题
+     */
+    private String mTitle="";
+    /**
+     * 所占百分比
+     */
+    private String mPercent="";
+    private int percent = 0;
+    /**
+     * 当前百分比
+     */
+    private int mCurPercent=0;
+    /**
+     * 是否显示百分号
+     */
+    private boolean mIsShow;
 
     public CustomProgressBar(Context context) {
         this(context,null);
@@ -71,10 +100,11 @@ public class CustomProgressBar extends View {
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
         int h = getMeasuredHeight();
-        int height = h+dipToPx(120);
-        int w = getScreenWidth();
+//        int height = h+dipToPx(120);
+//        int w = getScreenWidth();
+        int w = getMeasuredWidth();
 
-        setMeasuredDimension(w,height);
+        setMeasuredDimension(w,h);
 
     }
 
@@ -110,34 +140,12 @@ public class CustomProgressBar extends View {
         }
         a.recycle();
         mPaint = new Paint();
-        new Thread(){
-            @Override
-            public void run() {
-                while(true){
-                    mProgress++;
-                    if(mProgress == 360){
-                        mProgress = 0;
-                        if(!isNext){
-                            isNext = true;
-                        }else {
-                            isNext = false;
-                        }
-                    }
-                    postInvalidate();
-                    try {
-                        Thread.sleep(progressSpeed);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-        }.start();
     }
 
     @Override
     protected void onDraw(Canvas canvas) {
-        circleWidth = 40;
-        int center = (getHeight()-dipToPx(120))/2;//圆环圆心
+        circleWidth = 20;
+        int center = getHeight()/2;//圆环圆心
         int radius = center-circleWidth;//圆环半径
         mPaint.setStrokeWidth(circleWidth);
         mPaint.setStyle(Paint.Style.STROKE);
@@ -146,32 +154,106 @@ public class CustomProgressBar extends View {
 
 
         tvPaint = new Paint();
-        tvPaint.setTextSize(textSize);
+        tvPaint.setTextSize(textSize1);
         tvPaint.setColor(Color.BLACK);
         tvPaint.setTextAlign(Paint.Align.CENTER);
         // 用于定义的圆弧的形状和大小的界限
         RectF oval = new RectF(center - radius, center - radius, center + radius, center + radius);
 
-        canvas.drawText("10小时23分钟",center,center+textSize/3,tvPaint);
+        canvas.drawText(mTitle,center,center-textSize1/3,tvPaint);
+        tvPaint.setTextSize(textSize2);
+        tvPaint.setColor(0xffFA7229);
+        float v = tvPaint.measureText(mPercent);
+        if(!mIsShow){
+            canvas.drawText(mPercent,center,center+textSize2*2/3+dipToPx(10),tvPaint);
+        }else {
+            canvas.drawText(mPercent,center-v/3,center+textSize2*2/3+dipToPx(10),tvPaint);
+        }
+
+        if(mIsShow){
+            tvPaint.setTextSize(textSize3);
+            tvPaint.setColor(Color.BLACK);
+            float x = tvPaint.measureText(mPercent+"%");
+            canvas.drawText("%",center+x/2,center+textSize2*2/3+dipToPx(10),tvPaint);
+        }
         mPaint.setColor(Color.BLACK);
         canvas.drawCircle(center,center,radius,mPaint);
         mPaint.setColor(secondColor);
-        canvas.drawArc(oval,180,240,false,mPaint);
+        canvas.drawArc(oval,-90,mProgress,false,mPaint);
 
-        canvas.drawText("21:39:23",center+center/2,center*2+textSize/3,tvPaint);
+    }
 
-        //循环画圆环
-//        if(!isNext){
-//            mPaint.setColor(firstColor);
-//            canvas.drawCircle(center,center,radius,mPaint);
-//            mPaint.setColor(secondColor);
-//            canvas.drawArc(oval,-90,mProgress,false,mPaint);
-//        }else {
-//            mPaint.setColor(secondColor);
-//            canvas.drawCircle(center,center,radius,mPaint);
-//            mPaint.setColor(firstColor);
-//            canvas.drawArc(oval,-90,mProgress,false,mPaint);
-//        }
+    /**
+     * 设置是否显示百分号
+     */
+    public CustomProgressBar setIsShow(boolean show){
+        mIsShow = show;
+        invalidate();
+        return this;
+    }
+
+    /**
+     * 设置标题
+     */
+    public CustomProgressBar setmTitle(String title){
+        mTitle = title;
+        invalidate();
+        return this;
+    }
+
+    public CustomProgressBar setPercent(int percent){
+        mCurPercent = percent;
+//        invalidate();
+        return this;
+    }
+
+    public CustomProgressBar setSubTitle(String subTitle){
+        mPercent = subTitle;
+        invalidate();
+        return this;
+    }
+
+    /**
+     * 设置终止进度
+     */
+    public CustomProgressBar setOverProgress(int progress){
+        mOverProgress = progress;
+        return this;
+    }
+
+    /**
+     * 开始进度
+     */
+    public void start(){
+        if(!mIsShow){
+            return;
+        }
+        mProgress = 0;
+        mPercent = "";
+        percent=0;
+        if(!isNext){
+            new Thread(){
+                @Override
+                public void run() {
+                    while(true){
+                        isNext = true;
+                        percent++;
+                        mPercent = percent+"";
+                        mProgress = (int) (0.01f*percent*360);
+                        if(percent > mCurPercent){
+                            isNext = false;
+                            break;
+                        }
+                        postInvalidate();
+                        try {
+                            Thread.sleep(progressSpeed);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+            }.start();
+        }
     }
 
     /**
@@ -184,13 +266,4 @@ public class CustomProgressBar extends View {
         return (int)(dip * density + 0.5f * (dip >= 0 ? 1 : -1));
     }
 
-    /**
-     * 获取屏幕的宽度
-     */
-    private int getScreenWidth(){
-        WindowManager windowManager = (WindowManager) getContext().getSystemService(Context.WINDOW_SERVICE);
-        DisplayMetrics metrics = new DisplayMetrics();
-        windowManager.getDefaultDisplay().getMetrics(metrics);
-        return metrics.widthPixels;
-    }
 }
